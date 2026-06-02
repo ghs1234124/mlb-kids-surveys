@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>바람막이 매장 반응 조사</title>
+<style>
+  /* MLB KIDS 브랜드 톤 기반 매장 설문 폼 스타일 */
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Malgun Gothic", sans-serif;
+    background: #f4f6fa;
+    margin: 0;
+    padding: 16px;
+    color: #1a1a1a;
+  }
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+    padding: 28px 24px;
+  }
+  h1 {
+    font-size: 22px;
+    color: #002B5C;
+    margin: 0 0 6px;
+  }
+  .subtitle {
+    color: #666;
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+  .order-badge {
+    display: inline-block;
+    background: #006AE6;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+  .store-block {
+    background: #f0f4fa;
+    border-left: 4px solid #006AE6;
+    padding: 12px 14px;
+    margin-bottom: 20px;
+    border-radius: 6px;
+    position: relative;
+  }
+  .store-block label {
+    display: block;
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 6px;
+    color: #002B5C;
+  }
+  /* 매장 검색 드롭다운 — 벌크주문 폼과 동일 UX */
+  .shop-dropdown {
+    display: none;
+    max-height: 260px;
+    overflow-y: auto;
+    border: 1px solid #d0d7e2;
+    border-radius: 6px;
+    margin-top: 4px;
+    background: #fff;
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    z-index: 10;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  .shop-option {
+    padding: 10px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    border-bottom: 1px solid #f0f2f5;
+  }
+  .shop-option:hover, .shop-option.highlighted { background: #f0f4fa; }
+  .shop-option:last-child { border-bottom: none; }
+  .shop-option.hidden { display: none; }
+  select, input[type="text"], textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d0d7e2;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+  textarea { resize: vertical; min-height: 70px; }
+  .question {
+    margin-bottom: 22px;
+    padding-bottom: 18px;
+    border-bottom: 1px dashed #e0e4eb;
+  }
+  .question:last-of-type { border-bottom: none; }
+  .q-title {
+    font-weight: 600;
+    font-size: 15px;
+    margin-bottom: 10px;
+    color: #1a1a1a;
+  }
+  .q-required { color: #e03131; margin-left: 4px; }
+  .choices { display: flex; flex-direction: column; gap: 8px; }
+  .choice-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border: 1px solid #d0d7e2;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .choice-item:hover { background: #f0f4fa; }
+  .choice-item input { margin: 0; }
+  .rating { display: flex; gap: 8px; flex-wrap: wrap; }
+  .rating label {
+    flex: 1;
+    min-width: 56px;
+    text-align: center;
+    padding: 10px 4px;
+    border: 1px solid #d0d7e2;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.15s;
+  }
+  .rating input { display: none; }
+  .rating input:checked + span { color: #006AE6; }
+  .rating label:has(input:checked) {
+    background: #006AE6;
+    color: #fff;
+    border-color: #006AE6;
+  }
+  .matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .matrix-table th, .matrix-table td {
+    padding: 8px;
+    text-align: center;
+    border: 1px solid #e0e4eb;
+  }
+  .matrix-table th { background: #f0f4fa; color: #002B5C; }
+  .matrix-table td:first-child {
+    text-align: left;
+    font-weight: 500;
+  }
+  button {
+    width: 100%;
+    padding: 14px;
+    background: #006AE6;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+  button:hover { background: #0056c4; }
+  button:disabled { background: #a0a8b8; cursor: not-allowed; }
+  .status {
+    padding: 14px;
+    border-radius: 8px;
+    margin-top: 12px;
+    font-size: 14px;
+    display: none;
+  }
+  .status.success { background: #d4edda; color: #155724; display: block; }
+  .status.error { background: #f8d7da; color: #721c24; display: block; }
+  .desc { color: #666; font-size: 13px; margin-top: 4px; }
+  /* 상단 배너 이미지 — 가로 전체, 높이 제한 */
+  .header-image {
+    width: 100%;
+    max-height: 240px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    display: block;
+  }
+  /* 질문별 이미지 — 질문 텍스트 아래, 세로 제한 */
+  .question-image {
+    display: block;
+    max-width: 100%;
+    max-height: 320px;
+    margin: 10px 0 12px;
+    border-radius: 6px;
+    border: 1px solid #e0e4eb;
+    background: #fafbfd;
+    object-fit: contain;
+  }
+  /* 매트릭스 행 이미지 — 썸네일 크기 */
+  .matrix-row-image {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 4px;
+    vertical-align: middle;
+    margin-right: 8px;
+    border: 1px solid #e0e4eb;
+  }
+  /* 섹션 헤더 — 여러 주제가 있는 긴 설문에서 구분선 역할 */
+  .section-header {
+    margin: 32px -4px 16px;
+    padding: 12px 16px;
+    background: #002B5C;
+    color: #fff;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.3px;
+  }
+  .section-header:first-of-type { margin-top: 20px; }
+  /* 섹션 진행 안내 — 응답자 피로도 완화 */
+  .progress-hint {
+    text-align: right;
+    font-size: 12px;
+    color: #8a94a5;
+    margin-top: -8px;
+    margin-bottom: 8px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  
+  
+
+  
+  <div class="order-badge">바람막이-1차</div>
+  
+  <h1>바람막이 매장 반응 조사</h1>
+  <div class="subtitle">바람막이 판매 현장 반응을 확인하기 위한 설문입니다. 응답 내용은 다음 시즌 MD 기획에 반영됩니다.</div>
+
+  <form id="surveyForm">
+    
+    <div class="store-block">
+      <label for="shopSearch">매장명 선택 <span class="q-required">*</span></label>
+      <input type="text" id="shopSearch" placeholder="매장명을 검색하거나 선택하세요 (총 144개)" autocomplete="off">
+      
+      <input type="hidden" id="shopName" name="shopName">
+      <div id="shopDropdown" class="shop-dropdown">
+        
+        <div class="shop-option" data-value="AK분당">AK분당</div>
+        
+        <div class="shop-option" data-value="AK수원">AK수원</div>
+        
+        <div class="shop-option" data-value="AK원주">AK원주</div>
+        
+        <div class="shop-option" data-value="AK평택">AK평택</div>
+        
+        <div class="shop-option" data-value="가로수길(직)M">가로수길(직)M</div>
+        
+        <div class="shop-option" data-value="강남사옥(직)M">강남사옥(직)M</div>
+        
+        <div class="shop-option" data-value="강릉(대-위)M">강릉(대-위)M</div>
+        
+        <div class="shop-option" data-value="갤러리아광교">갤러리아광교</div>
+        
+        <div class="shop-option" data-value="갤러리아대전">갤러리아대전</div>
+        
+        <div class="shop-option" data-value="갤러리아센터시티">갤러리아센터시티</div>
+        
+        <div class="shop-option" data-value="거제(대-위)M">거제(대-위)M</div>
+        
+        <div class="shop-option" data-value="경기광주(대-위)M">경기광주(대-위)M</div>
+        
+        <div class="shop-option" data-value="경산(대-위)M">경산(대-위)M</div>
+        
+        <div class="shop-option" data-value="광명(대-위)M">광명(대-위)M</div>
+        
+        <div class="shop-option" data-value="구미(대-위)M">구미(대-위)M</div>
+        
+        <div class="shop-option" data-value="구미인동(대-위)M">구미인동(대-위)M</div>
+        
+        <div class="shop-option" data-value="김포장기(대-위)">김포장기(대-위)</div>
+        
+        <div class="shop-option" data-value="나주(대-위)M">나주(대-위)M</div>
+        
+        <div class="shop-option" data-value="남양주삼패(대-위)M">남양주삼패(대-위)M</div>
+        
+        <div class="shop-option" data-value="당진(대-위)M">당진(대-위)M</div>
+        
+        <div class="shop-option" data-value="대구성서(대-위)M">대구성서(대-위)M</div>
+        
+        <div class="shop-option" data-value="대구칠곡(대-위)M">대구칠곡(대-위)M</div>
+        
+        <div class="shop-option" data-value="대전은행(대-위)M">대전은행(대-위)M</div>
+        
+        <div class="shop-option" data-value="동성로(직)M">동성로(직)M</div>
+        
+        <div class="shop-option" data-value="동해(대-위)M">동해(대-위)M</div>
+        
+        <div class="shop-option" data-value="두타(대-위)M">두타(대-위)M</div>
+        
+        <div class="shop-option" data-value="롯데강남">롯데강남</div>
+        
+        <div class="shop-option" data-value="롯데건대">롯데건대</div>
+        
+        <div class="shop-option" data-value="롯데광복">롯데광복</div>
+        
+        <div class="shop-option" data-value="롯데광주">롯데광주</div>
+        
+        <div class="shop-option" data-value="롯데구리">롯데구리</div>
+        
+        <div class="shop-option" data-value="롯데김포">롯데김포</div>
+        
+        <div class="shop-option" data-value="롯데노원">롯데노원</div>
+        
+        <div class="shop-option" data-value="롯데대구">롯데대구</div>
+        
+        <div class="shop-option" data-value="롯데동래">롯데동래</div>
+        
+        <div class="shop-option" data-value="롯데동탄">롯데동탄</div>
+        
+        <div class="shop-option" data-value="롯데면세소공">롯데면세소공</div>
+        
+        <div class="shop-option" data-value="롯데면세제주(M)">롯데면세제주(M)</div>
+        
+        <div class="shop-option" data-value="롯데본점">롯데본점</div>
+        
+        <div class="shop-option" data-value="롯데부산">롯데부산</div>
+        
+        <div class="shop-option" data-value="롯데상인">롯데상인</div>
+        
+        <div class="shop-option" data-value="롯데센텀">롯데센텀</div>
+        
+        <div class="shop-option" data-value="롯데수원">롯데수원</div>
+        
+        <div class="shop-option" data-value="롯데수원(M)">롯데수원(M)</div>
+        
+        <div class="shop-option" data-value="롯데아울렛의왕(직)M">롯데아울렛의왕(직)M</div>
+        
+        <div class="shop-option" data-value="롯데안산">롯데안산</div>
+        
+        <div class="shop-option" data-value="롯데영등포">롯데영등포</div>
+        
+        <div class="shop-option" data-value="롯데울산">롯데울산</div>
+        
+        <div class="shop-option" data-value="롯데월드(직)">롯데월드(직)</div>
+        
+        <div class="shop-option" data-value="롯데인천">롯데인천</div>
+        
+        <div class="shop-option" data-value="롯데일산">롯데일산</div>
+        
+        <div class="shop-option" data-value="롯데일산(M)">롯데일산(M)</div>
+        
+        <div class="shop-option" data-value="롯데잠실">롯데잠실</div>
+        
+        <div class="shop-option" data-value="롯데잠실(M)">롯데잠실(M)</div>
+        
+        <div class="shop-option" data-value="롯데전주">롯데전주</div>
+        
+        <div class="shop-option" data-value="롯데중동">롯데중동</div>
+        
+        <div class="shop-option" data-value="롯데창원">롯데창원</div>
+        
+        <div class="shop-option" data-value="롯데청량리">롯데청량리</div>
+        
+        <div class="shop-option" data-value="롯데평촌">롯데평촌</div>
+        
+        <div class="shop-option" data-value="롯데포항">롯데포항</div>
+        
+        <div class="shop-option" data-value="마산합성(대-위)M">마산합성(대-위)M</div>
+        
+        <div class="shop-option" data-value="명동중앙(직)M">명동중앙(직)M</div>
+        
+        <div class="shop-option" data-value="모다아울렛천안(M)">모다아울렛천안(M)</div>
+        
+        <div class="shop-option" data-value="목포하당(대-위)M">목포하당(대-위)M</div>
+        
+        <div class="shop-option" data-value="보령(대-위)M">보령(대-위)M</div>
+        
+        <div class="shop-option" data-value="부산광복(대-위)M">부산광복(대-위)M</div>
+        
+        <div class="shop-option" data-value="부천(대-위)M">부천(대-위)M</div>
+        
+        <div class="shop-option" data-value="상주(대-위)M">상주(대-위)M</div>
+        
+        <div class="shop-option" data-value="서귀포(대-위)M">서귀포(대-위)M</div>
+        
+        <div class="shop-option" data-value="서산(대-위)M">서산(대-위)M</div>
+        
+        <div class="shop-option" data-value="성남신흥(대-위)M">성남신흥(대-위)M</div>
+        
+        <div class="shop-option" data-value="속초(대-위)M">속초(대-위)M</div>
+        
+        <div class="shop-option" data-value="순천연향(대-위)M">순천연향(대-위)M</div>
+        
+        <div class="shop-option" data-value="스퀘어원인천(대-위)M">스퀘어원인천(대-위)M</div>
+        
+        <div class="shop-option" data-value="스타필드고양(직)">스타필드고양(직)</div>
+        
+        <div class="shop-option" data-value="스타필드부천(직)">스타필드부천(직)</div>
+        
+        <div class="shop-option" data-value="스타필드빌리지운정(직)">스타필드빌리지운정(직)</div>
+        
+        <div class="shop-option" data-value="스타필드수원(직)">스타필드수원(직)</div>
+        
+        <div class="shop-option" data-value="스타필드수원(직)M">스타필드수원(직)M</div>
+        
+        <div class="shop-option" data-value="스타필드일산(직)">스타필드일산(직)</div>
+        
+        <div class="shop-option" data-value="스타필드하남(직)M">스타필드하남(직)M</div>
+        
+        <div class="shop-option" data-value="스타필드하남(직영)">스타필드하남(직영)</div>
+        
+        <div class="shop-option" data-value="신라면세용산">신라면세용산</div>
+        
+        <div class="shop-option" data-value="신라면세장충">신라면세장충</div>
+        
+        <div class="shop-option" data-value="신라면세제주(M)">신라면세제주(M)</div>
+        
+        <div class="shop-option" data-value="신세계강남">신세계강남</div>
+        
+        <div class="shop-option" data-value="신세계경기">신세계경기</div>
+        
+        <div class="shop-option" data-value="신세계광주">신세계광주</div>
+        
+        <div class="shop-option" data-value="신세계김해">신세계김해</div>
+        
+        <div class="shop-option" data-value="신세계대전">신세계대전</div>
+        
+        <div class="shop-option" data-value="신세계마산">신세계마산</div>
+        
+        <div class="shop-option" data-value="신세계면세명동(M)">신세계면세명동(M)</div>
+        
+        <div class="shop-option" data-value="신세계본점">신세계본점</div>
+        
+        <div class="shop-option" data-value="신세계센텀">신세계센텀</div>
+        
+        <div class="shop-option" data-value="신세계영등포">신세계영등포</div>
+        
+        <div class="shop-option" data-value="신세계의정부">신세계의정부</div>
+        
+        <div class="shop-option" data-value="신세계천안아산">신세계천안아산</div>
+        
+        <div class="shop-option" data-value="신제주(대-위)M">신제주(대-위)M</div>
+        
+        <div class="shop-option" data-value="아산(대-위)Mclose">아산(대-위)Mclose</div>
+        
+        <div class="shop-option" data-value="아이즈빌부평(대-위)M">아이즈빌부평(대-위)M</div>
+        
+        <div class="shop-option" data-value="안동(대-위)M">안동(대-위)M</div>
+        
+        <div class="shop-option" data-value="안산시화(대-위)M">안산시화(대-위)M</div>
+        
+        <div class="shop-option" data-value="안산중앙(대-위)M">안산중앙(대-위)M</div>
+        
+        <div class="shop-option" data-value="안산한대(대-위)M">안산한대(대-위)M</div>
+        
+        <div class="shop-option" data-value="안성(대-위)M">안성(대-위)M</div>
+        
+        <div class="shop-option" data-value="에버세이브청주(M)">에버세이브청주(M)</div>
+        
+        <div class="shop-option" data-value="엔터식스안양(M)">엔터식스안양(M)</div>
+        
+        <div class="shop-option" data-value="여수(대-위)M">여수(대-위)M</div>
+        
+        <div class="shop-option" data-value="여천(대-위)M">여천(대-위)M</div>
+        
+        <div class="shop-option" data-value="영주(대-위)M">영주(대-위)M</div>
+        
+        <div class="shop-option" data-value="오산(대-위)M">오산(대-위)M</div>
+        
+        <div class="shop-option" data-value="원주(대-위)M">원주(대-위)M</div>
+        
+        <div class="shop-option" data-value="익산(대-위)M">익산(대-위)M</div>
+        
+        <div class="shop-option" data-value="인천(대-위)M">인천(대-위)M</div>
+        
+        <div class="shop-option" data-value="전주송천(대-위)M">전주송천(대-위)M</div>
+        
+        <div class="shop-option" data-value="전주중앙(대-위)M">전주중앙(대-위)M</div>
+        
+        <div class="shop-option" data-value="정읍(대-위)M">정읍(대-위)M</div>
+        
+        <div class="shop-option" data-value="제주(대-위)M">제주(대-위)M</div>
+        
+        <div class="shop-option" data-value="제천(대-위)M">제천(대-위)M</div>
+        
+        <div class="shop-option" data-value="청주(대-위)M">청주(대-위)M</div>
+        
+        <div class="shop-option" data-value="춘천(대-위)M">춘천(대-위)M</div>
+        
+        <div class="shop-option" data-value="충장로(직)M">충장로(직)M</div>
+        
+        <div class="shop-option" data-value="충주(대-위)M">충주(대-위)M</div>
+        
+        <div class="shop-option" data-value="타임스퀘어영등포(직)M">타임스퀘어영등포(직)M</div>
+        
+        <div class="shop-option" data-value="타임테라스동탄(직)M">타임테라스동탄(직)M</div>
+        
+        <div class="shop-option" data-value="통영(대-위)M">통영(대-위)M</div>
+        
+        <div class="shop-option" data-value="퍼스트빌리지(대-위)M">퍼스트빌리지(대-위)M</div>
+        
+        <div class="shop-option" data-value="포천(대-위)M">포천(대-위)M</div>
+        
+        <div class="shop-option" data-value="포항(대-위)M">포항(대-위)M</div>
+        
+        <div class="shop-option" data-value="해남(대-위)M">해남(대-위)M</div>
+        
+        <div class="shop-option" data-value="현대대구">현대대구</div>
+        
+        <div class="shop-option" data-value="현대목동">현대목동</div>
+        
+        <div class="shop-option" data-value="현대미아">현대미아</div>
+        
+        <div class="shop-option" data-value="현대신촌">현대신촌</div>
+        
+        <div class="shop-option" data-value="현대울산">현대울산</div>
+        
+        <div class="shop-option" data-value="현대울산동구">현대울산동구</div>
+        
+        <div class="shop-option" data-value="현대중동">현대중동</div>
+        
+        <div class="shop-option" data-value="현대중동(M)">현대중동(M)</div>
+        
+        <div class="shop-option" data-value="현대충청">현대충청</div>
+        
+        <div class="shop-option" data-value="현대킨텍스">현대킨텍스</div>
+        
+        <div class="shop-option" data-value="현대판교">현대판교</div>
+        
+        <div class="shop-option" data-value="홍대(직)M">홍대(직)M</div>
+        
+        <div class="shop-option" data-value="홍성(대-위)M">홍성(대-위)M</div>
+        
+        <div class="shop-option" data-value="화성봉담(대-위)M">화성봉담(대-위)M</div>
+        
+      </div>
+    </div>
+
+    
+    
+    
+    
+    <div class="section-header">① 고객 반응</div>
+    
+    <div class="question" data-qid="q1" data-qtype="single_choice">
+      <div class="q-title">
+        1. 고객이 바람막이를 보고 가장 많이 보이는 반응은 무엇인가요?
+        <span class="q-required">*</span>
+      </div>
+      
+      
+      
+
+      
+        <div class="choices">
+          
+          <label class="choice-item">
+            <input type="radio" name="q1" value="기본형보다 디자인물이라 망설임" required>
+            <span>기본형보다 디자인물이라 망설임</span>
+          </label>
+          
+          <label class="choice-item">
+            <input type="radio" name="q1" value="가격 대비 얇다고 느낌" required>
+            <span>가격 대비 얇다고 느낌</span>
+          </label>
+          
+          <label class="choice-item">
+            <input type="radio" name="q1" value="블랙 외 컬러 반응이 약함" required>
+            <span>블랙 외 컬러 반응이 약함</span>
+          </label>
+          
+          <label class="choice-item">
+            <input type="radio" name="q1" value="입혀보면 괜찮은데 처음 집는 수가 적음" required>
+            <span>입혀보면 괜찮은데 처음 집는 수가 적음</span>
+          </label>
+          
+          <label class="choice-item">
+            <input type="radio" name="q1" value="기본형/무난한 스타일을 더 찾음" required>
+            <span>기본형/무난한 스타일을 더 찾음</span>
+          </label>
+          
+          <label class="choice-item">
+            <input type="radio" name="q1" value="기타(직접 입력)" required>
+            <span>기타(직접 입력)</span>
+          </label>
+          
+        </div>
+
+      
+    </div>
+    
+    
+    
+    <div class="question" data-qid="q2" data-qtype="single_choice">
+      <div class="q-title">
+        2. 고객이 실제로 더 잘 구매하는 바람막이 유형은 무엇인가요?
+        <span class="q-required">*</span>
+      </div>
+      
+      
+      
+
+      
+        <div class="choices">
+          
+          <label class="choice-item">
+            <input type="radio" name="q2" value="심플한 기본 초경량 스타일" required>
+            <span>심플한 기본 초경량 스타일</span>
+          </label>
+          
+          <label class="choice-item">
+            <input type="radio" name="q2" value="로고/디테일만 조금 있는 스타일" required>
+            <span>로고/디테일만 조금 있는 스타일</span>
+          </label>
+          
+          <label class="choice-item">
+            <input type="radio" name="q2" value="립스탑/배색 등 디자인 포인트 있는 스타일" required>
+            <span>립스탑/배색 등 디자인 포인트 있는 스타일</span>
+          </label>
+          
+          <label class="choice-item">
+            <input type="radio" name="q2" value="여아형/크롭형 등 패션형 스타일" required>
+            <span>여아형/크롭형 등 패션형 스타일</span>
+          </label>
+          
+          <label class="choice-item">
+            <input type="radio" name="q2" value="잘 모르겠음" required>
+            <span>잘 모르겠음</span>
+          </label>
+          
+        </div>
+
+      
+    </div>
+    
+    
+    
+    <div class="question" data-qid="q3" data-qtype="single_choice">
+      <div class="q-title">
+        3. 고객이 최종 구매를 포기하는 가장 큰 이유는 무엇인가요?
+        <span class="q-required">*</span>
+      </div>
+      
+      
+      
+
+      
+        <div class="choices">
+          
+          <label class="choice-item">
+            <input type="radio" name="q3" value="가격이 부담됨" required>
+            <span>가격이 부담됨</span>
+          </label>
+          
+          <label class="choice-item">
+            <input type="radio" name="q3" value="컬러가 애매함" required>
+            <span>컬러가 애매함</span>
+          </label>
+          
+          <label class="choice-item">
+            <input type="radio" name="q3" value="디자인이 과하거나 취향 탐" required>
+            <span>디자인이 과하거나 취향 탐</span>
+          </label>
+          
+          <label class="choice-item">
+            <input type="radio" name="q3" value="너무 얇아 보임 / 활용도가 애매함" required>
+            <span>너무 얇아 보임 / 활용도가 애매함</span>
+          </label>
+          
+          <label class="choice-item">
+            <input type="radio" name="q3" value="비슷한 상품 대비 메리트가 약함" required>
+            <span>비슷한 상품 대비 메리트가 약함</span>
+          </label>
+          
+          <label class="choice-item">
+            <input type="radio" name="q3" value="기타(직접 입력)" required>
+            <span>기타(직접 입력)</span>
+          </label>
+          
+        </div>
+
+      
+    </div>
+    
+    
+    
+    <div class="section-header">② 소재 관련</div>
+    
+    <div class="question" data-qid="q4" data-qtype="text">
+      <div class="q-title">
+        4. 현재 바람막이 판매 시 고객들이 가장 많이 언급하는 부분이나 불만 중 소재 관련 내용이 있다면 무엇인가요?
+        
+      </div>
+      
+      
+      
+
+      
+        
+        <textarea name="q4" placeholder="자유롭게 기술해주세요" ></textarea>
+        
+
+      
+    </div>
+    
+    
+    
+    <div class="question" data-qid="q5" data-qtype="text">
+      <div class="q-title">
+        5. 구매를 망설이는 주요 이유가 소재와 관련되어 있다면 어떤 부분인가요? (예: 가격 대비 소재가 약해 보임, 생활방수가 안 될 것 같음, 계절감이 애매함, 고급감 부족 등)
+        
+      </div>
+      
+      
+      
+
+      
+        
+        <textarea name="q5" placeholder="자유롭게 기술해주세요" ></textarea>
+        
+
+      
+    </div>
+    
+    
+    
+    <div class="question" data-qid="q6" data-qtype="text">
+      <div class="q-title">
+        6. 판매가 잘 되는 경쟁 브랜드 바람막이와 비교했을 때, 우리 제품 소재에서 부족해 보이는 점은 무엇인가요? (예: 두께감, 터치감, 컬러감, 광택감, 착용감, 기능성 표현 등)
+        
+      </div>
+      
+      
+      
+
+      
+        
+        <textarea name="q6" placeholder="자유롭게 기술해주세요" ></textarea>
+        
+
+      
+    </div>
+    
+    
+    
+    <div class="section-header">③ 개선 제안</div>
+    
+    <div class="question" data-qid="q7" data-qtype="text">
+      <div class="q-title">
+        7. 매장에서 가장 반응이 좋았던 바람막이 또는 경쟁사 상품의 특징은 무엇인가요?
+        
+      </div>
+      
+      
+      
+
+      
+        
+        <textarea name="q7" placeholder="자유롭게 기술해주세요" ></textarea>
+        
+
+      
+    </div>
+    
+    
+    
+    <div class="question" data-qid="q8" data-qtype="text">
+      <div class="q-title">
+        8. 다음 시즌에 바람막이를 다시 출시한다면 가장 먼저 개선했으면 하는 부분은 무엇인가요? (매장 입장에서 가장 체감되는 개선 포인트)
+        
+      </div>
+      
+      
+      
+
+      
+        
+        <textarea name="q8" placeholder="자유롭게 기술해주세요" ></textarea>
+        
+
+      
+    </div>
+    
+    
+    
+    <div class="question" data-qid="q9" data-qtype="text">
+      <div class="q-title">
+        9. 고객들이 바람막이를 보고 가장 많이 하는 반응이나, 결제까지 가지 않는다면 그 사유는 무엇인가요? (컬러, 핏, 길이, 소재감, 가격 등)
+        
+      </div>
+      
+      
+      
+
+      
+        
+        <textarea name="q9" placeholder="자유롭게 기술해주세요" ></textarea>
+        
+
+      
+    </div>
+    
+
+    <button type="submit" id="submitBtn">제출하기</button>
+    <div id="status" class="status"></div>
+  </form>
+</div>
+
+<script>
+  // Apps Script 엔드포인트 (generate_survey.py가 주입)
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxRVgubtcpyTWr1tcUgxMN-bx4RojFLwhKWXtuPDOHYgzhoBTkyEY9uTso4EMtcEiEodw/exec";
+  const SURVEY_ID = "\ubc14\ub78c\ub9c9\uc774-\ubc18\uc751\uc870\uc0ac-1\ucc28";
+  const SURVEY_TITLE = "\ubc14\ub78c\ub9c9\uc774 \ub9e4\uc7a5 \ubc18\uc751 \uc870\uc0ac";
+
+  // ==== 매장 검색 드롭다운 ====
+  (function initShopDropdown() {
+    const searchInput = document.getElementById("shopSearch");
+    const hiddenInput = document.getElementById("shopName");
+    const dropdown = document.getElementById("shopDropdown");
+    const options = dropdown.querySelectorAll(".shop-option");
+
+    // 포커스 시 드롭다운 열기
+    searchInput.addEventListener("focus", () => { dropdown.style.display = "block"; });
+    // blur 시 약간 지연 (option 클릭이 먼저 처리되도록)
+    searchInput.addEventListener("blur", () => {
+      setTimeout(() => { dropdown.style.display = "none"; }, 180);
+    });
+
+    // 입력 시 실시간 필터링 — 대소문자 무시, 부분 일치
+    searchInput.addEventListener("input", () => {
+      const q = searchInput.value.toLowerCase();
+      options.forEach(opt => {
+        opt.classList.toggle("hidden", !opt.textContent.toLowerCase().includes(q));
+      });
+      // 타이핑 중에는 이전 선택 무효화 (정확히 일치하는 매장만 유효)
+      hiddenInput.value = "";
+    });
+
+    // 매장 선택
+    options.forEach(opt => {
+      opt.addEventListener("mousedown", (ev) => {
+        // mousedown 사용: blur보다 먼저 발생하여 선택 로직이 먼저 처리됨
+        ev.preventDefault();
+        const val = opt.dataset.value;
+        searchInput.value = val;
+        hiddenInput.value = val;
+        dropdown.style.display = "none";
+        searchInput.blur();
+      });
+    });
+  })();
+
+  // 폼 제출 핸들러
+  document.getElementById("surveyForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById("submitBtn");
+    const status = document.getElementById("status");
+
+    // 매장 선택 검증 (hidden input은 HTML required 지원 안 됨 → JS로 검증)
+    const shopName = document.getElementById("shopName").value;
+    if (!shopName) {
+      status.className = "status error";
+      status.textContent = "매장을 선택해주세요. (드롭다운에서 선택 필요)";
+      document.getElementById("shopSearch").focus();
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "제출 중...";
+    status.className = "status";
+    status.textContent = "";
+
+    // 응답 수집 — 질문 유형별로 파싱
+    const formData = new FormData(e.target);
+    const answers = {};
+
+    document.querySelectorAll(".question").forEach(q => {
+      const qid = q.dataset.qid;
+      const qtype = q.dataset.qtype;
+
+      if (qtype === "multi_choice") {
+        // 복수선택은 콤마 결합 (미니VOC는 고유값 10개 이하면 객관식으로 인식)
+        const vals = formData.getAll(qid);
+        answers[qid] = vals.join(", ");
+      } else if (qtype === "matrix") {
+        // 행×열 매트릭스는 "행: 응답" 개별 필드로 저장
+        q.querySelectorAll("tbody tr").forEach(tr => {
+          const rowLabel = tr.querySelector("td:first-child").textContent.trim();
+          const key = qid + "__" + rowLabel;
+          answers[key] = formData.get(key) || "";
+        });
+      } else {
+        answers[qid] = formData.get(qid) || "";
+      }
+    });
+
+    // 제출 페이로드 구성
+    const payload = {
+      surveyId: SURVEY_ID,
+      surveyTitle: SURVEY_TITLE,
+      shopName: formData.get("shopName"),
+      answers: answers,
+    };
+
+    try {
+      // Apps Script는 CORS preflight 불허 → text/plain으로 우회
+      const res = await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",  // Apps Script는 CORS 헤더 미지원
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload),
+      });
+      // no-cors 모드는 응답 본문 읽기 불가 — 전송 성공으로 간주
+      status.className = "status success";
+      status.textContent = "제출이 완료되었습니다. 감사합니다.";
+      e.target.reset();
+    } catch (err) {
+      status.className = "status error";
+      status.textContent = "제출 실패: " + err.message;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "제출하기";
+    }
+  });
+</script>
+</body>
+</html>
