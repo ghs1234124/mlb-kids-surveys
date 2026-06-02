@@ -115,6 +115,12 @@
   }
   .choice-item:hover { background: #f0f4fa; }
   .choice-item input { margin: 0; }
+  /* 기타(직접 입력) 선택지 전용 입력칸 — 선택 시에만 표시 */
+  .other-input {
+    margin: -2px 0 2px;
+    border-color: #006AE6;
+    background: #f7faff;
+  }
   .rating { display: flex; gap: 8px; flex-wrap: wrap; }
   .rating label {
     flex: 1;
@@ -554,35 +560,58 @@
       
         <div class="choices">
           
+          
+          
           <label class="choice-item">
             <input type="radio" name="q1" value="기본형보다 디자인물이라 망설임" required>
             <span>기본형보다 디자인물이라 망설임</span>
           </label>
+          
+          
+          
           
           <label class="choice-item">
             <input type="radio" name="q1" value="가격 대비 얇다고 느낌" required>
             <span>가격 대비 얇다고 느낌</span>
           </label>
           
+          
+          
+          
           <label class="choice-item">
             <input type="radio" name="q1" value="블랙 외 컬러 반응이 약함" required>
             <span>블랙 외 컬러 반응이 약함</span>
           </label>
+          
+          
+          
           
           <label class="choice-item">
             <input type="radio" name="q1" value="입혀보면 괜찮은데 처음 집는 수가 적음" required>
             <span>입혀보면 괜찮은데 처음 집는 수가 적음</span>
           </label>
           
+          
+          
+          
           <label class="choice-item">
             <input type="radio" name="q1" value="기본형/무난한 스타일을 더 찾음" required>
             <span>기본형/무난한 스타일을 더 찾음</span>
           </label>
           
+          
+          
+          
           <label class="choice-item">
             <input type="radio" name="q1" value="기타(직접 입력)" required>
             <span>기타(직접 입력)</span>
           </label>
+          
+          
+          <input type="text" class="other-input" name="q1__other"
+                 data-for="q1" data-optval="기타(직접 입력)"
+                 placeholder="기타 내용을 직접 입력해주세요" disabled style="display:none;">
+          
           
         </div>
 
@@ -603,30 +632,45 @@
       
         <div class="choices">
           
+          
+          
           <label class="choice-item">
             <input type="radio" name="q2" value="심플한 기본 초경량 스타일" required>
             <span>심플한 기본 초경량 스타일</span>
           </label>
+          
+          
+          
           
           <label class="choice-item">
             <input type="radio" name="q2" value="로고/디테일만 조금 있는 스타일" required>
             <span>로고/디테일만 조금 있는 스타일</span>
           </label>
           
+          
+          
+          
           <label class="choice-item">
             <input type="radio" name="q2" value="립스탑/배색 등 디자인 포인트 있는 스타일" required>
             <span>립스탑/배색 등 디자인 포인트 있는 스타일</span>
           </label>
+          
+          
+          
           
           <label class="choice-item">
             <input type="radio" name="q2" value="여아형/크롭형 등 패션형 스타일" required>
             <span>여아형/크롭형 등 패션형 스타일</span>
           </label>
           
+          
+          
+          
           <label class="choice-item">
             <input type="radio" name="q2" value="잘 모르겠음" required>
             <span>잘 모르겠음</span>
           </label>
+          
           
         </div>
 
@@ -647,35 +691,58 @@
       
         <div class="choices">
           
+          
+          
           <label class="choice-item">
             <input type="radio" name="q3" value="가격이 부담됨" required>
             <span>가격이 부담됨</span>
           </label>
+          
+          
+          
           
           <label class="choice-item">
             <input type="radio" name="q3" value="컬러가 애매함" required>
             <span>컬러가 애매함</span>
           </label>
           
+          
+          
+          
           <label class="choice-item">
             <input type="radio" name="q3" value="디자인이 과하거나 취향 탐" required>
             <span>디자인이 과하거나 취향 탐</span>
           </label>
+          
+          
+          
           
           <label class="choice-item">
             <input type="radio" name="q3" value="너무 얇아 보임 / 활용도가 애매함" required>
             <span>너무 얇아 보임 / 활용도가 애매함</span>
           </label>
           
+          
+          
+          
           <label class="choice-item">
             <input type="radio" name="q3" value="비슷한 상품 대비 메리트가 약함" required>
             <span>비슷한 상품 대비 메리트가 약함</span>
           </label>
           
+          
+          
+          
           <label class="choice-item">
             <input type="radio" name="q3" value="기타(직접 입력)" required>
             <span>기타(직접 입력)</span>
           </label>
+          
+          
+          <input type="text" class="other-input" name="q3__other"
+                 data-for="q3" data-optval="기타(직접 입력)"
+                 placeholder="기타 내용을 직접 입력해주세요" disabled style="display:none;">
+          
           
         </div>
 
@@ -850,6 +917,32 @@
     });
   })();
 
+  // ==== 기타(직접 입력) 선택지 토글 ====
+  // "기타/직접 입력" 선택지를 고른 경우에만 해당 입력칸을 노출·활성화한다
+  (function initOtherInputs() {
+    document.querySelectorAll(".other-input").forEach(inp => {
+      const qid = inp.dataset.for;            // 연결된 질문 id
+      const optVal = inp.dataset.optval;       // 이 입력칸을 여는 선택지 값
+      const controls = document.querySelectorAll('input[name="' + qid + '"]');
+
+      // 선택 상태에 따라 입력칸 표시/숨김 동기화
+      function sync() {
+        let active = false;
+        controls.forEach(c => {
+          if (c.value === optVal && c.checked) active = true;
+        });
+        inp.style.display = active ? "block" : "none";
+        inp.disabled = !active;
+        if (active) {
+          inp.focus();
+        } else {
+          inp.value = "";  // 선택 해제 시 잔여 입력 제거
+        }
+      }
+      controls.forEach(c => c.addEventListener("change", sync));
+    });
+  })();
+
   // 폼 제출 핸들러
   document.getElementById("surveyForm").addEventListener("submit", async function(e) {
     e.preventDefault();
@@ -862,6 +955,20 @@
       status.className = "status error";
       status.textContent = "매장을 선택해주세요. (드롭다운에서 선택 필요)";
       document.getElementById("shopSearch").focus();
+      return;
+    }
+
+    // 기타(직접 입력) 검증 — 표시된 입력칸이 비어있으면 제출 차단
+    let emptyOther = null;
+    document.querySelectorAll(".other-input").forEach(inp => {
+      if (!inp.disabled && inp.offsetParent !== null && !inp.value.trim()) {
+        emptyOther = emptyOther || inp;
+      }
+    });
+    if (emptyOther) {
+      status.className = "status error";
+      status.textContent = "‘기타(직접 입력)’ 선택 시 내용을 입력해주세요.";
+      emptyOther.focus();
       return;
     }
 
@@ -881,6 +988,13 @@
       if (qtype === "multi_choice") {
         // 복수선택은 콤마 결합 (미니VOC는 고유값 10개 이하면 객관식으로 인식)
         const vals = formData.getAll(qid);
+        // 기타(직접 입력) 선택 시 "기타: 내용" 형태로 치환
+        const otherInput = q.querySelector(".other-input");
+        if (otherInput) {
+          const idx = vals.indexOf(otherInput.dataset.optval);
+          const txt = (formData.get(qid + "__other") || "").trim();
+          if (idx >= 0 && txt) vals[idx] = otherInput.dataset.optval + ": " + txt;
+        }
         answers[qid] = vals.join(", ");
       } else if (qtype === "matrix") {
         // 행×열 매트릭스는 "행: 응답" 개별 필드로 저장
@@ -890,7 +1004,14 @@
           answers[key] = formData.get(key) || "";
         });
       } else {
-        answers[qid] = formData.get(qid) || "";
+        let val = formData.get(qid) || "";
+        // 단일선택에서 기타(직접 입력) 선택 시 "기타: 내용" 형태로 치환
+        const otherInput = q.querySelector(".other-input");
+        if (otherInput && val === otherInput.dataset.optval) {
+          const txt = (formData.get(qid + "__other") || "").trim();
+          if (txt) val = val + ": " + txt;
+        }
+        answers[qid] = val;
       }
     });
 
